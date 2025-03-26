@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS Configuration (Allow frontend connections)
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://incubenation.com"], // Update allowed origins
+  origin: ["http://localhost:5173", "https://incubenation.com"], // Update allowed origins
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
