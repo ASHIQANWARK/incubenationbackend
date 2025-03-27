@@ -45,45 +45,48 @@ export const loginAdmin = async (req, res,next) => {
 
 // ✅ Add Blog (with Image Upload)
 // ✅ Add Blog (with Image Upload & Updated Schema)
+// In your addBlog controller
 export const addBlog = async (req, res, next) => {
-    try {
-      const { title, description } = req.body;
-  
-      if (!req.file) {
-        return res.status(400).json({ error: "No image uploaded" });
-      }
-  
-      // ✅ Upload image to Cloudinary
-      const uploadResult = await new Promise((resolve, reject) => {
-        const upload = cloudinary.uploader.upload_stream(
-          { folder: "blogs" }, // Stores inside "blogs/" folder
-          (error, result) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve(result);
-            }
-          }
-        );
-        upload.end(req.file.buffer); // Pass file buffer to Cloudinary
+  try {
+    console.log('Request files:', req.file); // Debug file upload
+    console.log('Request body:', req.body); // Debug other fields
+
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Featured image is required" 
       });
-  
-      // ✅ Save the blog in MongoDB
-      const newBlog = new Blog({
-        title,
-        description,
-        featuredImage: uploadResult.secure_url, // Store image URL
-      });
-  
-      await newBlog.save();
-  
-      res.status(201).json({ success: true, message: "Blog added successfully", blog: newBlog });
-    } catch (error) {
-      console.log(error);
-      next(error);
     }
-  };
-  
+
+    // Upload to Cloudinary
+    const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+      folder: "blogs"
+    });
+
+    const newBlog = new Blog({
+      title: req.body.title,
+      description: req.body.description,
+      featuredImage: uploadResult.secure_url,
+      slug: req.body.slug || generateSlug(req.body.title), // Add slug generation
+      publishedDate: req.body.publishedDate || new Date()
+    });
+
+    await newBlog.save();
+
+    res.status(201).json({ 
+      success: true,
+      blog: newBlog 
+    });
+
+  } catch (error) {
+    console.error('Server Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Blog creation failed",
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
   
   
   
