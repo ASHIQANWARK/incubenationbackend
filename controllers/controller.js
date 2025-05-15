@@ -239,7 +239,7 @@ export const getBlogBySlug = async (req, res, next) => {
         pagination: {
           page,
           limit,
-          total: totalBlogs,
+          total: totalBlogs, 
           totalPages: Math.ceil(totalBlogs / limit),
         },
       });

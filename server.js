@@ -9,39 +9,41 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS options (Update allowed origins as needed)
+// CORS Options — Allow specific frontend origins
 const corsOptions = {
-  origin: ["http://localhost:5173","https://www.incubenation.com", "https://incubenation.com"], // Allow specific frontend origins
+  origin: [
+    "http://localhost:5173",
+    "https://www.incubenation.com",
+    "https://incubenation.com",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 };
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: "20mb" })); // Parses JSON requests
-app.use(express.urlencoded({  limit: "20mb" ,extended: true })); // Parses URL-encoded data
 
-
+// Body Parsers
+app.use(express.json({ limit: "20mb" })); // Parse JSON payloads
+app.use(express.urlencoded({ limit: "20mb", extended: true })); // Parse URL-encoded data
 
 // Connect to MongoDB
 connectDB();
 
-// Routes
-app.use("/api", routes);
+// Mount all admin-related routes under /api/admin
+app.use("/api/admin", routes);
 
-
-
-// Error Handling Middleware
+// Global Error Handling Middleware
 app.use((err, req, res, next) => {
-
-  // Customize error response based on error type
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal Server Error";
-
-  res.status(statusCode).json({ success: false, message });
+  res.status(statusCode).json({
+    success: false,
+    message,
+  });
 });
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server is running at http://localhost:${PORT}`);
 });
