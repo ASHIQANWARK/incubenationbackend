@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";   // <-- import helmet
 import connectDB from "./config/db.js";
 import routes from "./routes/route.js";
 import dotenv from "dotenv";
@@ -23,15 +24,33 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Helmet for security headers including CSP
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],           // Allow content only from same origin by default
+      fontSrc: [
+        "'self'",
+        "https://incubenationbackend.onrender.com",  // Allow fonts from your backend
+      ],
+      scriptSrc: ["'self'"],            // Adjust other directives as needed
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],      // Allow images from same origin & inline base64
+      connectSrc: ["'self'"],           // For APIs etc
+      // add others if you need like mediaSrc, objectSrc, etc.
+    },
+  })
+);
+
 // Body Parsers
-app.use(express.json({ limit: "20mb" })); // Parse JSON payloads
-app.use(express.urlencoded({ limit: "20mb", extended: true })); // Parse URL-encoded data
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ limit: "20mb", extended: true }));
 
 // Connect to MongoDB
 connectDB();
 
-// Mount all admin-related routes under /api/admin
-app.use("/api/admin", routes);
+// Define API Routes
+app.use("/api", routes);
 
 // Global Error Handling Middleware
 app.use((err, req, res, next) => {
